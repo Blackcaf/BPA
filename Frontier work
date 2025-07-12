@@ -1,0 +1,443 @@
+Задание №1. Разработать программу для работы с элементами массива M, в которой:
+1. Массив имеет следующие характеристики:
+- адрес начала массива в памяти БЭВМ - 0x6cb;
+- число измерений исходного массива - 1;
+- количество элементов исходного массива - 20;
+- каждый элемент является знаковым числом с разрядностью 12 бит;
+- нумерация элементов начинается с 2;
+- элементы хранятся в массиве по границам слов, нет необходимости в плотной упаковке;
+2. Для элементов массива необходимо вычислить 32-х битное значение функции:
+- формула функции F(Mi) = 13 * Mi + 1528;
+- 32-битный результат необходимо поместить в другой массив по адресу 0x400
+- Результатом является массив 32-х разрядных чисел равным количеству элементов исходного массива.
+Примечание: все числа представлены в десятичной системе счисления, если явно не указано иное.
+
+ORG 0x10
+
+arr_len: WORD 20
+arr_start: WORD 0x6cb
+
+res_start: WORD 0x400
+
+arr_el: WORD ?
+res_el: WORD ?
+
+const: WORD 1528
+mask: WORD 0x0800
+sign_ext: WORD 0xF000
+sign_not_ext: WORD 0x07FF
+
+loop_counter: WORD ?
+buffer_value: WORD ?
+buffer_value_big: WORD ?
+
+ORG 0x20
+start:
+LD arr_len
+ST loop_counter
+LD arr_start
+ST arr_el
+LD res_start
+ST res_el
+
+cycle:
+
+LD (arr_el)+
+CALL extend_sign
+BNS neg_val
+CLA
+ST buffer_value_big
+BR cnt
+
+neg_val:
+LD #0xFF
+ST buffer_value_big
+
+cnt:
+PUSH
+LD buffer_value
+PUSH
+CALL compute_function
+POP
+ST (res_el)+
+POP
+ST (res_el)+
+
+LOOP loop_counter
+BR cycle
+HLT
+
+
+ORG 0x50
+compute_function:
+CALL add_self
+CALL add_self
+CALL mul_2
+CALL mul_2
+CALL add_self
+CALL add_const
+
+RET
+
+add_self:
+LD &2
+ADD $buffer_value
+ST &2
+
+LD &3
+ADC $buffer_value_big
+ST &3
+
+RET
+
+
+mul_2:
+LD &2
+ASL
+ST &2
+
+LD &3
+ROL
+ST &3
+
+RET
+
+add_const:
+LD &2
+ADD $const
+ST &2
+
+LD &3
+ADC #0
+ST &3
+
+RET
+
+
+extend_sign:
+PUSH
+AND $mask
+BZC contin
+POP
+AND $sign_not_ext
+ST $buffer_value
+RET
+
+contin:
+POP
+OR $sign_ext
+ST $buffer_value
+RET
+
+     
+Задание №1. Разработать программу для работы с элементами массива M, в которой:
+1. Массив имеет следующие характеристики:
+- адрес начала массива в памяти БЭВМ - 0x6ca;
+- число измерений исходного массива - 1;
+- количество элементов исходного массива - 25;
+- каждый элемент является знаковым числом с разрядностью 25 бит;
+- нумерация элементов начинается с 1;
+- элементы хранятся в массиве по границам слов, нет необходимости в плотной упаковке;
+2. Для элементов массива необходимо вычислить одно значение по правилам:
+- агрегировать необходимо только для элементы массива с кратными 2-м i-индексами;
+- из выбранных элементов необходимо вычислить cумму значений и записать результат в память по адресу 0x400.
+- Результатом является одно 32-х разрядное число!
+Примечание: все числа представлены в десятичной системе счисления, если явно не указано иное.
+
+ORG 0x400
+sum1: WORD 0          
+sum2: WORD 0          
+ArrAddr: WORD 0x6CA      
+CurElemAddr: WORD 0
+step: WORD 2
+arrayindex: WORD 2         
+ARRLENGHT: WORD 25
+temp: WORD 0
+one: WORD 1
+
+START:
+	CLA
+	ST sum1
+	ST sum2
+
+MAINLOOP:
+	LD arrayindex
+	CMP ARRLENGHT
+	BPL EXIT  
+	
+	LD arrayindex
+	SUB one
+	ADD ArrAddr
+	ST CurElemAddr
+	
+	LD (CurElemAddr)
+	ST temp
+
+	LD temp
+	ADD sum1
+	ST sum1
+	
+	LD sum2
+	ADC sum2
+	ST sum2
+	
+	LD arrayindex
+	ADD step
+	ST arrayindex
+	
+	JUMP MAINLOOP
+
+EXIT:
+	HLT
+
+ORG 0x6CA 
+	WORD 1
+	WORD 2
+	WORD 3
+	WORD 4
+	WORD 5
+	WORD 6
+	WORD 7
+	WORD 8
+	WORD 9
+	WORD 10
+	WORD 11
+	WORD 12
+	WORD 13
+	WORD 14
+	WORD 15
+	WORD 16
+	WORD 17
+	WORD 18
+	WORD 19
+	WORD 20
+	WORD 21
+	WORD 22
+	WORD 23
+	WORD 24
+	WORD 25
+
+
+Задание №1. Разработать программу для работы с элементами массива M, в которой:
+1. Массив имеет следующие характеристики:
+- адрес начала массива в памяти БЭВМ - 0x6c2;
+- число измерений исходного массива - 1;
+- количество элементов исходного массива - 25;
+- каждый элемент является знаковым числом с разрядностью 25 бит;
+- нумерация элементов начинается с 0;
+- элементы хранятся в массиве по границам слов, нет необходимости в плотной упаковке;
+2. Для элементов массива необходимо вычислить одно значение по правилам:
+- агрегировать необходимо только для элементы массива с кратными 2-м i-индексами;
+- из выбранных элементов необходимо вычислить логическое 'И' значений и записать результат в память по адресу 0x400.
+- Результатом является одно 32-х разрядное число!
+Примечание: все числа представлены в десятичной системе счисления, если явно не указано иное.
+
+ORG 0x020
+
+BEG:     WORD 0x06C2
+LEN:     WORD 0x0032
+
+IF_POS:  WORD 0x01FF
+IF_NEG:  WORD 0xFE00
+SIGN:      WORD 0X0100
+
+SUM1:    WORD 0
+SUM2:    WORD 0
+
+TMP:     WORD 0
+
+START:
+        LD   (BEG)+
+        ST   SUM1
+
+
+        LD   (BEG)+
+        ST   TMP
+
+        LD   TMP
+        AND  SIGN;
+        BEQ  POS1
+
+        LD   TMP
+        OR   IF_NEG
+        ST   TMP
+        JUMP  NEXT1
+
+POS1:
+        LD   TMP
+        AND  IF_POS
+        ST   TMP
+
+NEXT1:
+        LD   TMP
+        ST   SUM2
+
+        LD   LEN
+        DEC
+        DEC
+        ST   LEN
+
+
+LOOP0:
+        LD   BEG
+        INC;
+        INC;
+        ST   BEG
+        LD   LEN
+        DEC;
+        DEC;
+        ST   LEN
+        BEQ  DONE
+
+        LD   (BEG)+
+        AND  SUM1
+        ST   SUM1
+
+        LD   (BEG)+
+        ST   TMP
+
+        LD   TMP
+        AND  SIGN
+        BEQ  POS2
+
+        LD   TMP
+        OR   IF_NEG
+        ST   TMP
+        JUMP  NEXT2
+
+POS2:
+        LD   TMP
+        AND  IF_POS
+        ST   TMP
+
+NEXT2:
+        LD   TMP
+        AND  SUM2
+        ST   SUM2
+
+        LD   LEN
+        DEC
+        DEC
+        ST   LEN
+        BNE  LOOP0
+
+DONE:
+        LD   SUM1
+        ST   0x400
+        LD   SUM2
+        ST   0x401
+        HLT
+
+       
+Задание №1. Разработать программу для работы с элементами массива M, в которой:
+1. Массив имеет следующие характеристики:
+- адрес начала массива в памяти БЭВМ - 0x6c6;
+- число измерений исходного массива - 1;
+- количество элементов исходного массива - 23;
+- каждый элемент является знаковым числом с разрядностью 21 бит;
+- нумерация элементов начинается с 4;
+- элементы хранятся в массиве по границам слов, нет необходимости в плотной упаковке;
+2. Для элементов массива необходимо вычислить одно значение по правилам:
+- агрегировать необходимо только для элементы массива с кратными 4-м i-индексами;
+- из выбранных элементов необходимо вычислить максимальное значение и записать результат в память по адресу 0x400.
+- Результатом является одно 32-х разрядное число!
+Примечание: все числа представлены в десятичной системе счисления, если явно не указано иное.
+
+        ORG   0x6C6       ; тестовый массив
+ARR:    WORD  0x0000,0x10 ; <- #4 - загрузит 0xFFF00000
+        WORD  0xFFFF,0x1F ; <- #5 - проигнорирует, т.к. индекс 5 % 4 > 0
+        WORD  0xFFFF,0x1F
+        WORD  0xFFFF,0x1F
+        WORD  0xF000,0x10 ; <- #8 - загрузит 0xFFF0F000
+        WORD  0xFFFF,0x1F
+        WORD  0xFFFF,0x1F
+        WORD  0xFFFF,0x1F
+        WORD  0xF700,0x10 ; <- #12 - загрузит 0xFFF0F700 (корректно сравниваем младшие слова)
+        WORD  0xFFFF,0x1F
+        WORD  0xFFFF,0x1F
+        WORD  0xFFFF,0x1F
+        WORD  0x0000,0x00 ; <- #16 - загрузит 0x00000000
+        WORD  0xFFFF,0x1F
+        WORD  0xFFFF,0x1F
+        WORD  0xFFFF,0x1F
+        WORD  0x9060,0x0F ; <- #20 - загрузит 0x000F9060 <- [ответ]
+        WORD  0xFFFF,0x1F
+        WORD  0xFFFF,0x1F
+        WORD  0xFFFF,0x1F
+        WORD  0x9050,0x0F ; <- #24 - проигнорирует, т.к. меньше
+        WORD  0xFFFF,0x1F
+        WORD  0xFFFF,0x1F ; <- #26 - последний элемент массива (проигнорирует)
+        WORD  0xFFFF,0x1F
+        WORD  0xFFFF,0x0F ; <- #28 - проигнорирует, т.к. вышел за рамки массива
+
+        ORG   0x400
+        WORD  0x8000,0x0  ; здесь будет храниться результат (little-endian)
+
+        ORG   0x500
+FUNC:   LD    &1          ; функция для поиска максимального элемента
+        INC
+        ST    ARR_A
+        LD    RES
+        INC
+        ST    RES_A       ; завершаем работу с индексами
+        CALL  EXTEND
+        CMP   (RES_A)
+        BGE   LOOK        ; переход, если старшее слово результата не больше текущего элемента 
+        RET
+LOOK:   BZS   LOW
+        LD    (ARR_A)     ; копируем текущий элемент в результат (т.к. старшее слово больше)
+        CALL  EXTEND
+        ST    (RES_A)
+        LD    -(RES_A)
+        LD    -(ARR_A)
+        ST    (RES_A)
+        RET
+LOW:    LD    -(RES_A)    ; сравниваем младшие слова (т.к. старшие слова равны)
+        LD    -(ARR_A)
+        CMP   (RES_A)
+        BCC   QUIT
+        ST    (RES_A)     ; копируем младшее слово текущего элемента в результат
+QUIT:   RET
+ARR_A:  NOP               ; адрес текущего элемента массива
+RES_A:  NOP               ; адрес результата
+
+EXTEND: LD    (ARR_A)     ; функция расширения знака старшего слова
+        AND   SIGNCHK
+        BZC   IFNEG
+        LD    (ARR_A)
+        AND   ANDMASK     ; маскируем мусор в старших битах
+        RET
+IFNEG:  LD    (ARR_A)
+        OR    ORMASK      ; расширяем '1' на старшие биты
+        RET
+ORMASK: WORD  0xFFE0      ; маска (расширение отрицательного)
+ANDMASK:WORD  0x1F        ; маска (сохранение положительного)
+SIGNCHK:WORD  0x10        ; маска знакового бита
+
+START:  CLA               ; делаем программу перезапускаемой
+        ST    VISIT
+        ST    (RES)
+        LD    (RES)+
+        LD    INIT
+        ST    (RES)
+        LD    -(RES)
+REP:    LD    VISIT       ; начинаем обработку массива
+        DEC
+        CMP   COUNT
+        BGE   EXIT        ; if (VISIT - 1 >= COUNT) { exit(); }
+        LD    VISIT
+        ASL
+        ADD   ARR_INT
+        PUSH              ; загружаем в стек адрес текущего элемента массива
+        CALL  FUNC
+        POP
+        LD    VISIT       ; пропускаем элементы с номерами n % 4 > 0
+        ADD   #4
+        ST    VISIT
+        JUMP  REP         ; зацикливаемся
+EXIT:   HLT
+VISIT:  WORD  0           ; индекс посещённого элемента
+COUNT:  WORD  23          ; количество элементов в исходном массиве
+RES:    WORD  0x400       ; адрес младшего слова результата
+INIT:   WORD  0x8000      ; начальное значение старшего слова результата
+ARR_INT:LD    $ARR        ; адрес начала массива
